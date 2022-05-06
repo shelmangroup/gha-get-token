@@ -9,7 +9,7 @@ import (
 	"os"
 	"time"
 
-	jwt "github.com/dgrijalva/jwt-go"
+	jwt "github.com/golang-jwt/jwt/v4"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 
@@ -52,7 +52,7 @@ func getInstToken(f string, iss string, exp int64) (signedToken string, err erro
 	errChk(err)
 
 	claims := jwt.StandardClaims{
-		//iss: GitHub App's identifier
+		// iss: GitHub App's identifier
 		Issuer:    iss,
 		IssuedAt:  time.Now().Unix() - 60,
 		ExpiresAt: time.Now().Unix() + exp,
@@ -110,7 +110,6 @@ func readSecret(ctx context.Context, sc coreV1Types.SecretInterface, n string) *
 }
 
 func updateSecretBasicAuth(ctx context.Context, sc coreV1Types.SecretInterface, un, t, n, s string) {
-
 	secret := coreV1.Secret{
 		TypeMeta: metaV1.TypeMeta{
 			Kind:       "Secret",
@@ -159,7 +158,6 @@ func createSecretBasicAuth(ctx context.Context, sc coreV1Types.SecretInterface, 
 }
 
 func updateSecret(ctx context.Context, sc coreV1Types.SecretInterface, t, n, s string) {
-
 	secret := coreV1.Secret{
 		TypeMeta: metaV1.TypeMeta{
 			Kind:       "Secret",
@@ -213,10 +211,10 @@ func main() {
 	ctx, cancelFn := context.WithTimeout(context.Background(), time.Minute*5)
 	defer cancelFn()
 
-	//Get github install token
+	// Get github install token
 	iTkn, err := getInstToken(*pem, *appID, *ttl)
 	errChk(err)
-	//Get github access token
+	// Get github access token
 	switch aTkn := getAccToken(*installID, iTkn)["token"].(type) {
 	case string:
 		if readSecret(ctx, secretsClient, *secretname+"-opaque").Data != nil {
