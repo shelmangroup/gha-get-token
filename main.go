@@ -123,8 +123,15 @@ func updateSecretBasicAuth(ctx context.Context, sc coreV1Types.SecretInterface, 
 			},
 		},
 		StringData: map[string]string{
-			"username": un,
-			"password": t,
+			"username":         un,
+			"password":         t,
+			".git-credentials": fmt.Sprintf("https://%s:%s@github.com", un, t),
+			".gitconfig": `
+[credential "https://github.com"]
+helper = store
+[url "https://github.com/"]
+insteadOf = git@github.com:
+`,
 		},
 		Type: "kubernetes.io/basic-auth",
 	}
@@ -147,8 +154,15 @@ func createSecretBasicAuth(ctx context.Context, sc coreV1Types.SecretInterface, 
 			},
 		},
 		StringData: map[string]string{
-			"username": un,
-			"password": t,
+			"username":         un,
+			"password":         t,
+			".git-credentials": fmt.Sprintf("https://%s:%s@github.com", un, t),
+			".gitconfig": `
+[credential "https://github.com"]
+helper = store
+[url "https://github.com/"]
+insteadOf = git@github.com:
+`,
 		},
 		Type: "kubernetes.io/basic-auth",
 	}
