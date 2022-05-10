@@ -109,7 +109,7 @@ func readSecret(ctx context.Context, sc coreV1Types.SecretInterface, n string) *
 	return secret
 }
 
-func updateSecretBasicAuth(ctx context.Context, sc coreV1Types.SecretInterface, un, t, n, s string) {
+func makeSecret(un, t, n, s string) coreV1.Secret {
 	secret := coreV1.Secret{
 		TypeMeta: metaV1.TypeMeta{
 			Kind:       "Secret",
@@ -135,38 +135,17 @@ insteadOf = git@github.com:
 		},
 		Type: "kubernetes.io/basic-auth",
 	}
+	return secret
+}
 
+func updateSecretBasicAuth(ctx context.Context, sc coreV1Types.SecretInterface, un, t, n, s string) {
+	secret := makeSecret(un, t, n, s)
 	_, err := sc.Update(ctx, &secret, metaV1.UpdateOptions{FieldManager: "tokenGetter"})
 	errChk(err)
 }
 
 func createSecretBasicAuth(ctx context.Context, sc coreV1Types.SecretInterface, un, t, n, s string) {
-	secret := coreV1.Secret{
-		TypeMeta: metaV1.TypeMeta{
-			Kind:       "Secret",
-			APIVersion: "apps/v1",
-		},
-		ObjectMeta: metaV1.ObjectMeta{
-			Name:      s,
-			Namespace: n,
-			Annotations: map[string]string{
-				"tekton.dev/git-0": "https://github.com",
-			},
-		},
-		StringData: map[string]string{
-			"username":         un,
-			"password":         t,
-			".git-credentials": fmt.Sprintf("https://%s:%s@github.com", un, t),
-			".gitconfig": `
-[credential "https://github.com"]
-helper = store
-[url "https://github.com/"]
-insteadOf = git@github.com:
-`,
-		},
-		Type: "kubernetes.io/basic-auth",
-	}
-
+	secret := makeSecret(un, t, n, s)
 	_, err := sc.Create(ctx, &secret, metaV1.CreateOptions{FieldManager: "tokenGetter"})
 	errChk(err)
 }
